@@ -15,7 +15,7 @@
   
   >> #### Sample Output <h4>
   >>>> Below is an excerpt from Hanon's Excercise No. 19.\
-  >>>> ![alt text](https://raw.githubusercontent.com/IrinaLee521/Irina-Lee/master/Hanon19.PNG)\
+  >>>> ![alt text](https://raw.githubusercontent.com/IrinaLee521/Irina-Lee/master/Resources/Hanon19.PNG)\
   >>>> **Output:** [[64, 57, 1], [64, 69, 5], [64, 65, 3], [64, 67, 4], [64, 69, 5], [64, 65, 3], [64, 64, 2], [64, 67, 4], [64, 59, 1], [64, 71, 5], [64, 67, 3], [64, 69, 4], [64, 71, 5], [64, 67, 3], [64, 65, 2], [64, 69, 4]]
 
   
