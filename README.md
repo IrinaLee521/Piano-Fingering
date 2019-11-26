@@ -1,5 +1,5 @@
 # Automatic and Customized Piano Fingering <h1>
-  ## Irina Lee <h2>
+  ## ***Irina Lee*** <h2>
   
   ### Overview <h3>
   >> Piano fingering is a numbering guide written on sheet music meant to help pianists play with greater comfort and fluidity, with the numbers 1-5 representing the thumb through pinky respectively. Although sheet music publishing companies often write in fingering, different pianists with varying hand spans will find that these pre-written fingerings cannot be applied to them. My solution proposes an algorithm that takes in a user's hand span and an image file of sheet music and output another image file with the calculated fingering customized to the user.
