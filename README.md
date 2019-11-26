@@ -1,4 +1,4 @@
-# Automic and Customized Piano Fingering <h1>
+# Automatic and Customized Piano Fingering <h1>
   ## Irina Lee <h2>
   
   ### Overview <h3>
