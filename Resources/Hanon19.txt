@@ -1,0 +1,52 @@
+MFile 1 2 256
+MTrk
+0 TimeSig 4/4 24 8
+0 KeySig 0 major
+0 Tempo 600000
+0 Meta TrkName "Hanon19"
+0 Meta Text "Hanon"
+0 Meta Copyright "Copyright © "
+1 Meta TrkEnd
+TrkEnd
+MTrk
+0 PrCh ch=1 p=1
+0 Par ch=1 c=121 v=0
+0 Par ch=1 c=64 v=0
+0 Par ch=1 c=91 v=48
+0 Par ch=1 c=10 v=64
+0 Par ch=1 c=7 v=100
+0 Meta TrkName " "
+0 On ch=1 n=57 v=76
+64 Off ch=1 n=57 v=0
+64 On ch=1 n=69 v=84
+128 Off ch=1 n=69 v=0
+128 On ch=1 n=65 v=78
+192 Off ch=1 n=65 v=0
+192 On ch=1 n=67 v=81
+256 Off ch=1 n=67 v=0
+256 On ch=1 n=69 v=84
+320 Off ch=1 n=69 v=0
+320 On ch=1 n=65 v=74
+384 Off ch=1 n=65 v=0
+384 On ch=1 n=64 v=71
+448 Off ch=1 n=64 v=0
+448 On ch=1 n=67 v=81
+512 Off ch=1 n=67 v=0
+512 On ch=1 n=59 v=65
+576 Off ch=1 n=59 v=0
+576 On ch=1 n=71 v=88
+640 Off ch=1 n=71 v=0
+640 On ch=1 n=67 v=81
+704 Off ch=1 n=67 v=0
+704 On ch=1 n=69 v=86
+768 Off ch=1 n=69 v=0
+768 On ch=1 n=71 v=88
+832 Off ch=1 n=71 v=0
+832 On ch=1 n=67 v=76
+896 Off ch=1 n=67 v=0
+896 On ch=1 n=65 v=68
+960 Off ch=1 n=65 v=0
+960 On ch=1 n=69 v=84
+1024 Off ch=1 n=69 v=0
+1025 Meta TrkEnd
+TrkEnd
