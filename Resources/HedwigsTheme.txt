@@ -1,0 +1,62 @@
+MFile 1 2 256
+MTrk
+0 TimeSig 3/4 24 8
+0 KeySig 0 major
+0 Tempo 600000
+0 Meta TrkName "Hedwig's Theme"
+0 Meta Text "John Williams"
+0 Meta Copyright "Copyright © "
+1 Meta TrkEnd
+TrkEnd
+MTrk
+0 PrCh ch=1 p=1
+0 Par ch=1 c=121 v=0
+0 Par ch=1 c=64 v=0
+0 Par ch=1 c=91 v=48
+0 Par ch=1 c=10 v=64
+0 Par ch=1 c=7 v=100
+0 Meta TrkName " "
+512 On ch=1 n=64 v=76
+768 Off ch=1 n=64 v=0
+768 On ch=1 n=69 v=78
+1024 Off ch=1 n=69 v=0
+1024 On ch=1 n=72 v=79
+1280 Off ch=1 n=72 v=0
+1280 On ch=1 n=71 v=77
+1536 Off ch=1 n=71 v=0
+1536 On ch=1 n=69 v=75
+2048 Off ch=1 n=69 v=0
+2048 On ch=1 n=76 v=79
+2304 Off ch=1 n=76 v=0
+2304 On ch=1 n=74 v=76
+3072 Off ch=1 n=74 v=0
+3072 On ch=1 n=71 v=76
+3840 Off ch=1 n=71 v=0
+3840 On ch=1 n=69 v=76
+4096 Off ch=1 n=69 v=0
+4096 On ch=1 n=72 v=78
+4352 Off ch=1 n=72 v=0
+4352 On ch=1 n=71 v=76
+4608 Off ch=1 n=71 v=0
+4608 On ch=1 n=67 v=73
+5120 Off ch=1 n=67 v=0
+5120 On ch=1 n=70 v=77
+5376 Off ch=1 n=70 v=0
+5376 On ch=1 n=64 v=73
+6656 Off ch=1 n=64 v=0
+6656 On ch=1 n=64 v=76
+6912 Off ch=1 n=64 v=0
+6912 On ch=1 n=69 v=78
+7168 Off ch=1 n=69 v=0
+7168 On ch=1 n=72 v=79
+7424 Off ch=1 n=72 v=0
+7424 On ch=1 n=71 v=77
+7680 Off ch=1 n=71 v=0
+7680 On ch=1 n=69 v=75
+8192 Off ch=1 n=69 v=0
+8192 On ch=1 n=76 v=79
+8448 Off ch=1 n=76 v=0
+8448 On ch=1 n=79 v=79
+9216 Off ch=1 n=79 v=0
+9217 Meta TrkEnd
+TrkEnd
