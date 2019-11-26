@@ -1,0 +1,67 @@
+MFile 1 2 256
+MTrk
+0 TimeSig 4/4 24 8
+0 KeySig 0 major
+0 Tempo 600000
+0 Meta TrkName "Can You Feel The Love Tonight"
+0 Meta Text "Elton John"
+0 Meta Copyright "Copyright © "
+1 Meta TrkEnd
+TrkEnd
+MTrk
+0 PrCh ch=1 p=1
+0 Par ch=1 c=121 v=0
+0 Par ch=1 c=64 v=0
+0 Par ch=1 c=91 v=48
+0 Par ch=1 c=10 v=64
+0 Par ch=1 c=7 v=100
+0 Meta TrkName " "
+0 On ch=1 n=69 v=76
+128 Off ch=1 n=69 v=0
+128 On ch=1 n=71 v=77
+256 Off ch=1 n=71 v=0
+256 On ch=1 n=72 v=78
+384 Off ch=1 n=72 v=0
+384 On ch=1 n=74 v=80
+512 Off ch=1 n=74 v=0
+512 On ch=1 n=72 v=76
+640 Off ch=1 n=72 v=0
+640 On ch=1 n=67 v=68
+768 Off ch=1 n=67 v=0
+1024 On ch=1 n=69 v=75
+1152 Off ch=1 n=69 v=0
+1152 On ch=1 n=71 v=78
+1280 Off ch=1 n=71 v=0
+1280 On ch=1 n=72 v=79
+1408 Off ch=1 n=72 v=0
+1408 On ch=1 n=74 v=81
+1536 Off ch=1 n=74 v=0
+1536 On ch=1 n=72 v=76
+1792 Off ch=1 n=72 v=0
+2048 On ch=1 n=69 v=74
+2176 Off ch=1 n=69 v=0
+2176 On ch=1 n=71 v=77
+2304 Off ch=1 n=71 v=0
+2304 On ch=1 n=72 v=78
+2432 Off ch=1 n=72 v=0
+2432 On ch=1 n=74 v=80
+2560 Off ch=1 n=74 v=0
+2560 On ch=1 n=72 v=76
+2688 Off ch=1 n=72 v=0
+2688 On ch=1 n=67 v=68
+2816 Off ch=1 n=67 v=0
+2816 On ch=1 n=76 v=85
+3072 Off ch=1 n=76 v=0
+3072 On ch=1 n=77 v=83
+3200 Off ch=1 n=77 v=0
+3200 On ch=1 n=76 v=79
+3328 Off ch=1 n=76 v=0
+3328 On ch=1 n=74 v=75
+3456 Off ch=1 n=74 v=0
+3456 On ch=1 n=72 v=71
+3584 Off ch=1 n=72 v=0
+3584 On ch=1 n=74 v=76
+3840 Off ch=1 n=74 v=0
+3841 Meta TrkEnd
+TrkEnd
+
