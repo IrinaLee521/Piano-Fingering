@@ -1,0 +1,561 @@
+import re
+black_keys = {1, 3, 6, 8, 10, 13, 15, 18, 19, 20, 22, 25, 27, 30, 32, 34,
+              37, 39, 42, 44, 46, 49, 51, 54, 56, 58, 61, 63, 66, 68, 70,
+              73, 75, 78, 80, 82, 85, 87, 90, 92, 94, 97, 99, 102, 104, 106,
+              109, 111, 114, 116, 118, 121, 123, 126}
+
+
+# Given a MIDI file converted into a text file, return the a list of lists, with the outer list representing the entire
+# piece and each inner list representing a single note/rest. You can return, notes_dict or pretty_dict
+def parse_midi_text(text_file):
+    note_value_table = {0: "C", 1: "C#", 2: "D", 3: "D#", 4: "E", 5: "F", 6: "F#", 7: "G", 8: "G#", 9: "A", 10: "A#", 11: "B"}
+    midi_scanner = open(text_file)
+    midi_arr = midi_scanner.readlines()
+    rnote_dict = []
+    lnote_dict = []
+    note_dict = rnote_dict
+    justnotes_dict = []
+    start = 0
+    found_start = False
+    while found_start is False:
+        if len(midi_arr[start]) >= 21:
+            if midi_arr[start][16:21] == "Piano":
+                found_start = True
+        start += 1
+    note_end_time = int(midi_arr[start].split()[0]) # default start value
+    for i in range(start, len(midi_arr) - 2):
+        midi_note_num = int(midi_arr[i].split()[3][2:])
+        octave = str(midi_note_num // 12)  # ex: the 5 in C5
+        note = note_value_table[midi_note_num % 12]  # remainder of mod 12 is used to index the note value
+        if midi_arr[i].split()[1] == "On":
+            note_start_time = int(midi_arr[i].split()[0])
+            if note_start_time != note_end_time:
+                note_dict.append([note_start_time - note_end_time, -1, None])
+                justnotes_dict.append(-1)
+        elif midi_arr[i].split()[1] == "Off":
+            note_end_time = int(midi_arr[i].split()[0])
+            note_dict.append([note_end_time - note_start_time, midi_note_num, None])
+            justnotes_dict.append(midi_note_num)
+    return rnote_dict, lnote_dict, justnotes_dict
+
+
+def arrange_static_minn(minn):
+    return {minn: 1, minn + 1: 2, minn + 2: 2, minn + 3: 3, minn + 4: 3, minn + 5: 4, minn + 6: 4, minn + 7: 5}
+
+
+def arrange_static_maxn(maxn):
+    return {maxn - 7: 1, maxn - 6: 2, maxn - 5: 2, maxn - 4: 3, maxn - 3: 3, maxn - 2: 4, maxn - 1: 4, maxn: 5}
+
+
+def is_local_extreme(music_arr, hand_pos, i):
+    curr = music_arr[i][1]
+    if curr == -1:
+        return False
+    if curr not in hand_pos and curr > music_arr[i - 1][1] and curr > music_arr[i + 1][1]:  # local max
+        return True
+    elif curr not in hand_pos and curr < music_arr[i - 1][1] and curr < music_arr[i + 1][1]:  # local min
+        return True
+    return False
+
+
+def find_all_extremes(music_arr):
+    extremes = []  # stores indices
+    starts = []
+    hand_pos = arrange_hand(music_arr)
+    for i in range(1, len(music_arr) - 1):
+        if is_local_extreme(music_arr, hand_pos, i):
+            curr, s_index = find_local_reverse(music_arr, i - 1)
+            extremes.append(i)
+            starts.append(s_index)
+            hand_pos = arrange_hand(music_arr[i:])
+    start_extreme = dict(zip(starts, extremes))
+    return start_extreme
+
+
+def finger_section(section, hand_pos):
+    for note in section:
+        note[2] = hand_pos[note[1]]
+    return section
+
+
+# Creates hand position for local extremes
+
+
+def minor_change(music_arr):
+    maxnote = music_arr[0][1]
+    minnote = music_arr[0][1]
+    extr = ""
+    for note in music_arr:
+        if note[1] > maxnote: maxnote = note[1]
+        elif note[1] < minnote: minnote = note[1]
+    note_finger = dict()
+    num2s = (maxnote - minnote) - 5
+    note_finger[minnote] = 1
+    count2 = 1
+    while count2 <= num2s:
+        note_finger[minnote + count2] = 2
+        count2 += 1
+    note_finger[minnote + count2] = 3
+    note_finger[minnote + count2 + 1] = 3
+    note_finger[minnote + count2 + 2] = 4
+    note_finger[minnote + count2 + 3] = 4
+    note_finger[maxnote] = 5
+    return note_finger, music_arr[-1]
+
+
+def find_local_reverse(music_arr, i):
+    while i >= 0:
+        curr = music_arr[i][1]
+        if curr != -1:
+            if curr > music_arr[i - 1][1] and curr > music_arr[i + 1][1]:  # local max
+                return curr, i
+            elif curr < music_arr[i - 1][1] and curr < music_arr[i + 1][1]:  # local min
+                return curr, i
+        i -= 1
+    return music_arr[0][1], 0
+
+
+def arrange_hand(music_arr):
+   maxn = music_arr[0][1]
+   minn = music_arr[0][1]
+   maxn_out = None  # purpose of maxn_out is to determine whether fi-1 minor alteration is local minn or maxn
+   i = 1
+   while maxn - minn < 7 and i < len(music_arr):  # while within a fifth and it doesn't hit a rest
+       if music_arr[i][1] > maxn:
+           maxn = music_arr[i][1]
+           maxn_out = True
+       elif music_arr[i][1] < minn:
+           minn = music_arr[i][1]
+           maxn_out = False
+       i += 1
+   if maxn - minn <= 7: maxn_out = True
+   if not maxn_out:
+       hand_pos = arrange_static_maxn(maxn)
+   else:
+       hand_pos = arrange_static_minn(minn)
+   return hand_pos
+
+
+# Breaks piece of music into sections based on rests
+# if this note is local extreme, append this note to a new section
+# if this note is a rest, start new section without appending
+# else, add note to current section
+def identify_sections(music_arr):
+    piece = []
+    section = []
+    # Break piece based on rests
+    for i in range(len(music_arr)):
+        if music_arr[i][1] == -1:
+            piece.append(section)
+            section = []
+        else:
+            section.append(music_arr[i])
+    piece.append(section)
+    # Break piece based on local min/max
+    new_sects = []
+    for section in piece:
+        hand_pos = arrange_hand(section)
+        i = 1
+        while len(find_all_extremes(section)) > 0:  # while there are extremes
+            if is_local_extreme(section, hand_pos, i):
+                start, s_i = find_local_reverse(section, i - 1)
+                new_sects.append(section[:s_i])
+                new_sects.append(section[s_i:i + 1])
+                section = section[i + 1:]
+                hand_pos = arrange_hand(section)
+                i = 1
+            i += 1
+        new_sects.append(section)
+    return new_sects
+
+
+def place_ones(section):
+    for i in range(1, len(section)):
+        if section[i - 1][1] in black_keys and section[i][1] not in black_keys \
+                and section[i][1] - section[i - 1][1] <= 2:
+            section[i][2] = 1
+        if section[i - 1][1] not in black_keys and section[i][1] not in black_keys \
+                and section[i][1] - section[i - 1][1] == 1:
+            section[i][2] = 1
+    return section
+
+
+def finger_poss(prev_note, curr_note):
+    switcher_up = {  # possibilities going up
+        1: [2, 3, 4, 5],
+        2: [3, 4, 5],  # 1
+        3: [4, 5],  # 1
+        4: [5],  # 1
+        5: []
+    }
+    switcher_down = {  # possibilities going down
+        1: [4, 3, 2],
+        2: [1],
+        3: [2, 1],
+        4: [3, 2, 1],
+        5: [4, 3, 2, 1]
+    }
+    if curr_note[1] - prev_note[1] > 0: return switcher_up[prev_note[2]]
+    elif curr_note[1] - prev_note[1] < 0: return switcher_down[prev_note[2]]
+    else: return [prev_note[2]]  # repeated notes = repeated fingering (temp solution)
+
+
+def finger_scale(section):
+    poss = {2, 3, 4, 5}
+    if section[0][1] not in black_keys:
+        section[0][2] = 1
+        section[len(section)-1][2] = 5
+    for i in range(len(section)):
+        if i > 0:
+            poss = finger_poss(section[i - 1], section[i])
+        if section[i][2] is None:
+            section[i][2] = min(poss)
+    return section, section[-1]
+
+
+def finger_entire_scale(music_sections):
+    for i in range(len(music_sections)):
+        music_sections[i] = place_ones(music_sections[i])
+        music_sections[i], prev = finger_scale(music_sections[i])
+    return music_sections
+
+
+# Given a static music section, return a hand position for that section. The purpose of extr is to optimize an
+# already working fingering. It's the local min/max of the previous section and used as a point of reference.
+def arrange_static(music_arr, extr):
+    maxn = music_arr[0][1]
+    minn = music_arr[0][1]
+    for i in range(len(music_arr)):
+        maxn = max(music_arr[i][1], maxn)
+        minn = min(music_arr[i][1], minn)
+    if extr is not None and extr[1] < minn and maxn - extr[1] <= 7:
+        return arrange_static_minn(extr[1]), music_arr[-1]
+    elif extr is not None and extr[1] > maxn and extr[1] - minn <= 7:
+        return arrange_static_maxn(extr[1]), music_arr[-1]
+    else:
+        return arrange_static_minn(minn), music_arr[-1]  # arranging by min is default case
+
+
+def finger_piece(music_sections):
+    prev = None
+    next_prev = None
+    hand_pos = dict()
+    for i in range(len(music_sections)):
+        # print(music_sections[i])
+        # print("PREV: ", prev)
+        # print()
+        maxnote = music_sections[i][0][1]
+        minnote = music_sections[i][0][1]
+        # print(minnote)
+        if prev is not None:
+            music_sections[i] = [prev] + music_sections[i]
+        for note in music_sections[i]:
+            if note[1] > maxnote:
+                maxnote = note[1]
+            elif note[1] < minnote:
+                minnote = note[1]
+        # print("MAXNOTE: ", maxnote)
+        # print("MINNOTE: ", minnote)
+        if music_sections[i][-1][1] - music_sections[i][0][1] >= 10:  # JUMP CASE
+            if prev is None:
+                music_sections[i], next_prev = finger_scale(music_sections[i])
+            else:
+                music_sections[i], next_prev = finger_scale(music_sections[i][1:])
+        elif maxnote - minnote > 7:
+            if prev is None or prev[1] == maxnote or prev[1] == minnote:  # What if prev is an extr but separated by a rest?
+                hand_pos, next_prev = minor_change(music_sections[i])
+                # print("NEXT PREV: ", next_prev)
+            else:
+                hand_pos, next_prev = minor_change(music_sections[i][1:])  # ignores prev if it's not an extreme
+            if prev is None:  # This section is why we need next_prev
+                music_sections[i] = finger_section(music_sections[i], hand_pos)
+            else:
+                music_sections[i] = finger_section(music_sections[i][1:], hand_pos)  # [1:] is to cut out prev note
+        else:  # static case
+            if prev is None:
+                hand_pos, next_prev = arrange_static(music_sections[i], prev)
+                music_sections[i] = finger_section(music_sections[i], hand_pos)
+            else:
+                hand_pos, next_prev = arrange_static(music_sections[i][1:], prev)
+                music_sections[i] = finger_section(music_sections[i][1:], hand_pos)
+                if len(music_sections[i]) > 0:
+                    prev = music_sections[i][-1]
+        if next_prev is not None:
+            prev = next_prev
+    return music_sections, hand_pos
+
+
+#  prepares notes_arr list for repeated and finger_motif methods by converting all ints to string and adding 0s
+def prepare_notes_list(notes_arr):
+    for i in range(len(notes_arr)):
+        if len(str(notes_arr[i])) == 1:
+            notes_arr[i] = ("00" + str(notes_arr[i])).strip()
+        elif len(str(notes_arr[i])) == 2:
+            notes_arr[i] = ("0" + str(notes_arr[i])).strip()
+        else:
+            notes_arr[i] = str(notes_arr[i]).strip()
+    return notes_arr
+
+
+# Given a notes_arr as a string, finds the motif
+def repeated(s):
+    # num = 1
+    # i = str(num)
+    # regex = r'^(.+)(.*\1)'
+    # regex2 = regex + r'{' + i + r'}'
+    # while ',' in re.compile(regex2).match(s).group(1):
+    #     num += 1
+    #     i = str(num)
+    #     pastregex = regex2
+    #     regex2 = regex + r'{' + i + r'}'
+    # REPEATER = re.compile(pastregex)
+    # match = REPEATER.match(s)
+    regex = r'^(.+)(.*\1)'
+    REPEATER = re.compile(regex)
+    match = REPEATER.match(s)
+    if len(match.group(1)) >= 7:
+        if match.group(1)[-1] != "," and match.group(1)[-7] != ",":
+            i = match.group(1)[::-1].find(",")
+            motif = match.group(1)[: len(match.group(1)) - i]
+            return motif
+    else:
+        if match.group(1)[-1] != ",":
+            i = match.group(1)[::-1].find(",")
+            motif = match.group(1)[: len(match.group(1)) - i]
+            return motif
+    return match.group(1) if match else None
+
+
+def find_differences(notes_arr):
+    differences = []
+    for i in range(1, len(notes_arr)):
+        differences.append(notes_arr[i] - notes_arr[i - 1])
+    return differences
+
+
+def find_motif(notes_arr, differences):
+    diff_mod = str(prepare_notes_list(differences))[1:-1]
+    motif_diff = repeated(diff_mod).split(',')
+    motif_diff2 = repeated(diff_mod)
+    if motif_diff[-1] == '': motif_diff = motif_diff[:-1]
+    motif_length = len(motif_diff) + 1
+    motif_list = notes_arr[:motif_length]
+    motif_mod = str(prepare_notes_list(motif_list))[1:-1]
+    return motif_mod, motif_diff2
+
+
+# Given indices at which motif occurs, output a "matrix" motif
+def prepare_motif(motif, index_set, music_arr):
+    end_index = None
+    motif_list = []
+    for i in range(len(music_arr)):
+        if i in index_set:
+            end_index = i + len(motif) - 1
+        if end_index is not None:
+            motif_list.append(music_arr[i])
+        if i == end_index:
+            return [motif_list]
+    return None
+
+
+def find_indices(differences, motif_diff):
+    bi = 0  # bi is the buildup index that keeps track of where you are in the entire notes_arr
+    index_set = set()
+    fingering = ""
+    while differences.find(motif_diff) != -1:
+        i = differences.find(motif_diff) + bi  # +1?
+        index_set.add(i // 7)
+        differences = differences[i + 1:]
+        bi += i + 1
+    return index_set
+
+
+# Hahaha you should change this^^
+def finger_arpeggio(music_sections):
+    fingering = [1, 2, 3]
+    for i in range(len(music_sections)):
+        for k in range(len(music_sections[i])):
+            music_sections[i][k][2] = fingering[k]
+    return music_sections
+
+
+# Given a string of notes_arr and motif, finds all indices of where motif occurs and places motif fingering
+def finger_motif(motif, music_arr, index_set):  # DEBUG:))
+    fingering = ""
+    hand_pos = None
+    motif_sections = prepare_motif(motif.split(','), index_set, music_arr)
+    motif_fingered, hand_pos = finger_piece(motif_sections)
+    # motif_fingered = finger_arpeggio(motif_sections)
+    for i in range(len(motif_fingered[0])):
+        fingering += str(motif_fingered[0][i][2])
+    return fingering, index_set, hand_pos
+
+
+# Places fingering for motif in music_sections
+def finger_with_motif(music_sections, fingering, index_set):
+    c = 0
+    end_index = None
+    for i in range(len(music_sections)):
+        if c in index_set:
+            end_index = c + len(fingering) - 1
+            t = 0
+        if end_index is not None:
+            music_sections[i][2] = int(fingering[t])
+            t += 1
+        if c == end_index:
+            end_index = None
+            t = 0
+        c += 1
+    return music_sections
+
+
+# -1 = Not an extreme, 0 = Local min, 1 = Local max
+def is_extreme(music_arr, i):
+    curr = music_arr[i][1]
+    if curr == -1:
+        return -1
+    if curr > music_arr[i - 1][1] and curr > music_arr[i + 1][1]:  # local max
+        return 1
+    elif curr < music_arr[i - 1][1] and curr < music_arr[i + 1][1]:  # local min
+        return 0
+    return -1
+
+
+def identify_static_hand_position(note, fingering):
+    if fingering == 1:
+        return {note: 1, note + 1: 2, note + 2: 2, note + 3: 3, note + 4: 3, note + 5: 4, note + 6: 4, note + 7: 5}
+    elif fingering == 2:
+        return {note - 2: 1, note - 1: 1, note: 2, note + 1: 3, note + 2: 3, note + 3: 4, note + 4: 4, note + 5: 5}
+    elif fingering == 3:
+        return {note - 4: 1, note - 3: 1, note - 2: 2, note - 1: 2, note: 3, note + 1: 4, note + 2: 4, note + 3: 5}
+    elif fingering == 4:
+        return {note - 5: 1, note - 4: 2, note - 3: 2, note - 2: 3, note - 1: 3, note: 4, note + 1: 5, note + 2: 5}
+    elif fingering == 5:
+        return {note - 7: 1, note - 6: 2, note - 5: 2, note - 4: 3, note - 3: 3, note - 2: 4, note - 1: 4, note: 5}
+    return None
+
+
+# Identifies hand position for hand that stretches beyond penta scale
+def identify_shift(music_arr, i1, i2):
+    maxnote = max(music_arr[i1][1], music_arr[i2][1])
+    minnote = min(music_arr[i1][1], music_arr[i2][1])
+    note_finger = dict()
+    num2s = (maxnote - minnote) - 5
+    note_finger[minnote] = 1
+    count2 = 1
+    while count2 <= num2s:
+        note_finger[minnote + count2] = 2
+        count2 += 1
+    note_finger[minnote + count2] = 3
+    note_finger[minnote + count2 + 1] = 3
+    note_finger[minnote + count2 + 2] = 4
+    note_finger[minnote + count2 + 3] = 4
+    note_finger[maxnote] = 5
+    return note_finger
+
+
+# i1/i2 = indices of local extremes
+def fill_space(music_arr, i1, i2):
+    hand_pos = dict()
+    if abs(music_arr[i2][1] - music_arr[i1][1]) <= 7:
+        for i in range(i1, i2 + 1):
+            if music_arr[i][1] != -1 and music_arr[i][2] is not None:
+                hand_pos = identify_static_hand_position(music_arr[i][1], music_arr[i][2])
+                # print("hp1: ", hand_pos)
+        for i in range(i1, i2 + 1):
+            if music_arr[i][1] != -1 and music_arr[i][2] is None: music_arr[i][2] = hand_pos[music_arr[i][1]]
+    else:
+        hand_pos = identify_shift(music_arr, i1, i2)
+        # print("hp2: ", hand_pos)
+        for i in range(i1, i2 + 1):
+            if music_arr[i][1] != -1 and music_arr[i][2] is None: music_arr[i][2] = hand_pos[music_arr[i][1]]
+    return music_arr
+
+
+# Parse through the entire piece, identifying sections between local extremes and filling in gaps left by the motif
+def finger_between_motif(music_arr):
+    localmin = 0
+    localmax = 0
+    has_blanks = False  # Assumes that there are no blanks in the section
+    for i in range(1, len(music_arr) - 1):
+        if music_arr[i][2] is None:
+            has_blanks = True  # Signals that fill_space should be called for this section
+        if is_extreme(music_arr, i) == 1:  # Hits a local max
+            # print(localmin, i)
+            # print(music_arr)
+            if has_blanks:
+                music_arr = fill_space(music_arr, localmin, i)
+            has_blanks = False  # Reset
+            localmax = i
+        elif is_extreme(music_arr, i) == 0:  # Hits a local min
+            # print(localmax, i)
+            # print(music_arr)
+            if has_blanks:
+                music_arr = fill_space(music_arr, localmax, i) # might have trouble
+            has_blanks = False
+            localmin = i
+    # Fingering the end of the piece
+    start = max(localmin, localmax)
+    music_arr = fill_space(music_arr, start, len(music_arr) - 1)
+    return music_arr
+
+
+# Places a 2 between two 1s
+def finger_crossover(music_sections):
+    ones = []
+    cross = set()
+    c = 0
+    for i in range(len(music_sections)):
+        if music_sections[i][2] == 1:
+            ones.append(c)
+        c += 1
+    for i in range(1, len(ones)):
+        if ones[i] - ones[i - 1] == 2:
+            cross.add(ones[i]-1)
+    c = 0
+    for i in range(len(music_sections)):
+        if c in cross:
+            music_sections[i][2] = 2
+        c += 1
+    return music_sections
+
+
+def finger_piece_alternative(music_sections, motif_fingering, index_set, hand_pos):
+    # music_sections[0][2] = 5  # How do you know which note to start on? Try local min/max stuff...
+    music_sections = finger_with_motif(music_sections, motif_fingering, index_set)
+    music_sections = finger_between_motif(music_sections)
+    music_sections = finger_crossover(music_sections)
+    return music_sections, hand_pos
+
+
+def remove_rests(music_arr):
+    rest_indices = []
+    for i in range(len(music_arr)):
+        if music_arr[i][1] == -1: rest_indices.append(i - len(rest_indices))  # Subtraction accounts for already removed rests
+    for i in range(len(rest_indices)): music_arr.pop(rest_indices[i])
+    return music_arr
+
+
+def main():
+    name = input("Input Piece of Music: ")
+    music_arr, notes_arr = parse_midi_text(name)
+    print(music_arr)
+    notes_arr = [value for value in notes_arr if value != -1]
+    music_arr = remove_rests(music_arr)
+    differences = find_differences(notes_arr)
+    motif, motif_diff = find_motif(notes_arr, differences)
+    print(motif)
+    notes_mod = str(prepare_notes_list(notes_arr))[1:-1]
+    diff_mod = str(prepare_notes_list(differences))[1:-1]
+    index_set = find_indices(diff_mod, motif_diff)
+    print(index_set)
+    motif_fingering, index_set, hand_pos = finger_motif(motif, music_arr, index_set)
+    music_sections = identify_sections(music_arr)
+    while [] in music_sections:  # might be inefficient for large lists
+        music_sections.remove([])
+    # music_sections, hand_pos = finger_piece(music_sections)
+    music_arr, hand_pos = finger_piece_alternative(music_arr, motif_fingering, index_set, hand_pos)
+    print(music_arr)
+
+
+if __name__ == '__main__': main()
